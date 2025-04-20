@@ -19,51 +19,87 @@ public_users.post("/register", (req, res) => {
 
 // Get the book list available in the shop
 public_users.get('/', function (req, res) {
-  return res.json(books);
+  new Promise((resolve, reject) => {
+    if (!books)
+      return reject(new Error("empty books database"));
+    return resolve(books);
+  })
+    .then((books) => res.json(books))
+    .catch((err) => res.status(500).send(err.message));
   // return res.send(JSON.stringify(books, null, 4));
 });
 
 // Get book details based on ISBN
 public_users.get('/isbn/:isbn', function (req, res) {
   const isbn = req.params.isbn;
-  const book = books[isbn];
-  if (!book)
-    return res.status(404).send("Book not found!");
-  return res.json(book);
+  new Promise((resolve, reject) => {
+    if (!books)
+      return reject(new Error("empty books database"));
+    return resolve(books);
+  })
+    .then((books) => {
+      const book = books[isbn];
+      if (!book)
+        return res.status(404).send("Book not found!");
+      return res.json(book);
+    })
+    .catch((err) => res.status(500).send(err.message));
   // return res.send(JSON.stringify(book, null, 4));
 });
 
 // Get book details based on author
 public_users.get('/author/:author', function (req, res) {
   const author = req.params.author;
-  const filteredBooks = {};
-  let matched = 0;
-  for (const [isbn, book] of Object.entries(books)) {
-    if (book.author.toLowerCase() === author.toLowerCase()) {
-      filteredBooks[isbn] = book;
-      matched++;
-    }
-  }
-  if (matched === 0)
-    return res.status(404).send("No books found!");
-  return res.json(filteredBooks);
+  new Promise((resolve, reject) => {
+    if (!books)
+      return reject(new Error("empty books database"));
+    return resolve(books);
+  })
+    .then((books) => {
+      const filteredBooks = {};
+      let matched = 0;
+      for (const [isbn, book] of Object.entries(books)) {
+        if (book.author.toLowerCase() === author.toLowerCase()) {
+          filteredBooks[isbn] = book;
+          matched++;
+        }
+      }
+      return { filteredBooks, matched };
+    })
+    .then(({ filteredBooks, matched }) => {
+      if (matched === 0)
+        return res.status(404).send("No books found!");
+      return res.json(filteredBooks);
+    })
+    .catch((err) => res.status(500).send(err.message));
   // return res.send(JSON.stringify(filteredBooks, null, 4));
 });
 
 // Get all books based on title
 public_users.get('/title/:title', function (req, res) {
   const title = req.params.title;
-  const filteredBooks = {};
-  let matched = 0;
-  for (const [isbn, book] of Object.entries(books)) {
-    if (book.title.toLowerCase() === title.toLowerCase()) {
-      filteredBooks[isbn] = book;
-      matched++;
-    }
-  }
-  if (matched === 0)
-    return res.status(404).send("No books found!");
-  return res.json(filteredBooks);
+  new Promise((resolve, reject) => {
+    if (!books)
+      return reject(new Error("empty books database"));
+    return resolve(books);
+  })
+    .then((books) => {
+      const filteredBooks = {};
+      let matched = 0;
+      for (const [isbn, book] of Object.entries(books)) {
+        if (book.title.toLowerCase() === title.toLowerCase()) {
+          filteredBooks[isbn] = book;
+          matched++;
+        }
+      }
+      return { filteredBooks, matched };
+    })
+    .then(({ filteredBooks, matched }) => {
+      if (matched === 0)
+        return res.status(404).send("No books found!");
+      return res.json(filteredBooks);
+    })
+    .catch((err) => res.status(500).send(err.message));
   // return res.send(JSON.stringify(filteredBooks, null, 4));
 });
 

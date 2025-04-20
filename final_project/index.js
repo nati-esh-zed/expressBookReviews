@@ -16,7 +16,19 @@ app.use(express.json());
 app.use("/customer", session({ secret: SESSION_SECRET, resave: true, saveUninitialized: true }))
 
 app.use("/customer/auth/*", function auth(req, res, next) {
-  //Write the authenication mechanism here
+  //Write the authentication mechanism here
+  if (!req.session.accessToken) {
+    return res.status(401).send("Unauthenticated! please login first.");
+  }
+  const accessToken = req.session.accessToken;
+  jwt.verify(accessToken, JWT_SECRET, (err, payload) => {
+    if (err) {
+      delete req.session.accessToken;
+      return res.status(401).send("Invalid session token! Please login again.");
+    }
+    req.session.username = payload.username;
+    next();
+  });
 });
 
 
